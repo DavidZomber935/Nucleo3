@@ -6,13 +6,18 @@ import { dbRealTime } from '../configs/firebaseConfig';
 import { getAuth } from 'firebase/auth';
 import { styles } from '../themes/styles';
 
-export const CreateProduct = ({ visible, onClose }) => {
-  const [nombre, setNombre] = useState('');
-  const [desarrolladora, setDesarrolladora] = useState('');
-  const [año, setAño] = useState('');
-  const [consola, setConsola] = useState('');
-  const [stock, setStock] = useState('');
-  const [precio, setPrecio] = useState('');
+interface CreateProductProps {
+  visible: boolean;
+  onClose: () => void;
+}
+
+export const CreateProduct: React.FC<CreateProductProps> = ({ visible, onClose }) => {
+  const [nombre, setNombre] = useState<string>('');
+  const [desarrolladora, setDesarrolladora] = useState<string>('');
+  const [año, setAño] = useState<string>('');
+  const [consola, setConsola] = useState<string>('');
+  const [stock, setStock] = useState<string>('');
+  const [precio, setPrecio] = useState<string>('');
 
   const auth = getAuth();
   const user = auth.currentUser;
@@ -30,7 +35,6 @@ export const CreateProduct = ({ visible, onClose }) => {
       };
       await push(productRef, newProduct);
       
-      // Limpiar los campos después de crear el producto
       setNombre('');
       setDesarrolladora('');
       setAño('');
@@ -38,7 +42,7 @@ export const CreateProduct = ({ visible, onClose }) => {
       setStock('');
       setPrecio('');
 
-      onClose(); // Cerrar el modal después de agregar el producto
+      onClose(); 
     }
   };
 

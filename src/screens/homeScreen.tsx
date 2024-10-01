@@ -2,18 +2,33 @@ import React, { useEffect, useState } from "react";
 import { SafeAreaView, View, Text, ScrollView, StatusBar } from "react-native";
 import { Button, IconButton } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
-import { getAuth, signOut, updateProfile } from "firebase/auth";
+import { getAuth, signOut, updateProfile, User } from "firebase/auth";
 import { ref, onValue, update } from "firebase/database";
 import { dbRealTime } from "../configs/firebaseConfig";
 import { styles } from "../themes/styles";
 import { UpdateUsuario } from "../components/UpdateUsuario";
 import { CreateProduct } from "../components/CreateProduct";
+import { UpdateProduct } from "../components/UpdateProduct"; 
+import { DeleteProduct } from "../components/DeleteProduct"; 
 
-export const HomeScreen = () => {
-  const [user, setUser] = useState(null);
-  const [products, setProducts] = useState([]);
+
+interface Product {
+  id: string;
+  nombre: string;
+  desarrolladora: string;
+  año: string;
+  consola: string;
+  stock: number;
+  precio: number;
+}
+
+export const HomeScreen: React.FC = () => {
+  const [user, setUser] = useState<User | null>(null); 
+  const [products, setProducts] = useState<Product[]>([]); 
   const [isModalVisible, setModalVisible] = useState(false);
   const [isProductModalVisible, setProductModalVisible] = useState(false);
+  const [isUpdateModalVisible, setUpdateModalVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); 
 
   const navigation = useNavigation();
   const auth = getAuth();
@@ -36,6 +51,7 @@ export const HomeScreen = () => {
     }
   }, [auth]);
 
+
   const handleLogout = () => {
     signOut(auth)
       .then(() => {
@@ -46,6 +62,7 @@ export const HomeScreen = () => {
       });
   };
 
+
   const handleNameChange = async (newName: string) => {
     if (user && newName) {
       try {
@@ -54,7 +71,7 @@ export const HomeScreen = () => {
           name: newName,
         });
         setUser({ ...user, displayName: newName });
-        setModalVisible(false);
+        setModalVisible(false); 
       } catch (error) {
         console.error("Error al actualizar el nombre:", error);
       }
@@ -83,11 +100,13 @@ export const HomeScreen = () => {
           />
         </View>
 
+
         <UpdateUsuario
           visible={isModalVisible}
           onClose={() => setModalVisible(false)}
           onSave={handleNameChange}
         />
+
 
         <CreateProduct
           visible={isProductModalVisible}
@@ -99,9 +118,33 @@ export const HomeScreen = () => {
             <View key={product.id} style={styles.container}>
               <Text style={styles.secondaryText}>{product.nombre}</Text>
               <Text style={styles.text}>${product.precio}</Text>
+
+ 
+              <IconButton
+                icon="pencil"
+                size={24}
+                onPress={() => {
+                  setSelectedProduct(product);
+                  setUpdateModalVisible(true);
+                }}
+              />
+
+
+              <DeleteProduct productId={product.id} userId={user?.uid || ""} />
             </View>
           ))}
         </ScrollView>
+
+
+        {selectedProduct && (
+          <UpdateProduct
+            visible={isUpdateModalVisible}
+            onClose={() => setUpdateModalVisible(false)}
+            product={selectedProduct}
+            userId={user?.uid || ""}
+          />
+        )}
+
 
         <Button style={styles.button} mode="contained" onPress={handleLogout}>
           Cerrar Sesión
